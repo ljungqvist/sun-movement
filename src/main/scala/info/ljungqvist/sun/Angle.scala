@@ -1,5 +1,7 @@
 package info.ljungqvist.sun
 
+import scala.language.implicitConversions
+
 /**
   * Created on 02/09/15.
   *
@@ -8,7 +10,7 @@ package info.ljungqvist.sun
 class Angle(angle: Double) {
 
     private val max: Double = Angle.RAD_MAX / 2d
-    private val min: Double = -max
+    private val min: Double = max - Angle.RAD_MAX
 
     private val a = {
         var a = angle
@@ -17,9 +19,9 @@ class Angle(angle: Double) {
         a
     }
 
-    lazy val sin = Math.sin(a)
-    lazy val cos = Math.cos(a)
-    lazy val tan = Math.tan(a)
+    lazy val sin: Double = Math.sin(a)
+    lazy val cos: Double = Math.cos(a)
+    lazy val tan: Double = Math.tan(a)
 
     def unary_- = new Angle(-a)
 
@@ -31,22 +33,22 @@ class Angle(angle: Double) {
 
     def /(d: Double) = new Angle(a / d)
 
-    def ==(other: Angle) = equals(other)
+    def ==(other: Angle): Boolean = equals(other)
 
-    def isPositive = a >= 0d
+    def isPositive: Boolean = a >= 0d
 
     def inRad: Double = a
 
     def inDeg: Double = a * Angle.DEG_MAX / Angle.RAD_MAX
 
-    override def toString = "Rad[" + a + "]"
+    override def toString: String = "Rad[" + a + "]"
 
-    override def equals(o: scala.Any) = o match {
+    override def equals(o: scala.Any): Boolean = o match {
         case angle: Angle => a == angle.a
         case _ => false
     }
 
-    override def hashCode() = a.hashCode()
+    override def hashCode: Int = a.hashCode
 }
 
 object Rad {
@@ -58,7 +60,7 @@ object Deg {
 }
 
 object Angle {
-    val RAD_MAX = Math.PI * 2d
+    val RAD_MAX: Double = Math.PI * 2d
     val DEG_MAX = 360d
 
     implicit def castDoubleToTrigonometryDouble(d: Double): TrigonometryDouble = new TrigonometryDouble(d)

@@ -12,7 +12,6 @@ class AngleTest extends WordSpec with MustMatchers {
 
     "The radians" should {
         "be between 0 an 2Pi" in {
-            "wer" mustEqual "wer"
             Rad(2d) mustEqual Rad(2d)
             Rad(1d + RAD_MAX) mustEqual Rad(1d)
             Rad(1d + 2d * RAD_MAX) mustEqual Rad(1d)
@@ -33,6 +32,11 @@ class AngleTest extends WordSpec with MustMatchers {
             Rad(RAD_MAX / 4d) + Rad(RAD_MAX / 4d) mustEqual Rad(RAD_MAX / 2d)
             Rad(RAD_MAX / 4d) + Rad(RAD_MAX / 4d) + Deg(90d) mustEqual Rad(3d * RAD_MAX / 4d)
         }
+
+        "work with multiplication" in {
+            Rad(1) * 1.3 mustEqual Rad(1.3)
+        }
+
     }
 
 }

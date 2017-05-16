@@ -9,13 +9,13 @@ class Vector(x0: Double, x1: Double, x2: Double) {
 
     private val v = Array(x0, x1, x2)
 
-    def apply(i: Int) = v(i)
+    def apply(i: Int): Double = v(i)
 
-    def x = v(0)
+    def x: Double = v(0)
 
-    def y = v(1)
+    def y: Double = v(1)
 
-    def z = v(2)
+    def z: Double = v(2)
 
     def *(other: Vector): Double = {
         var res: Double = 0d

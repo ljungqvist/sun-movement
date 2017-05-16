@@ -21,15 +21,15 @@ class JulianDate(val dayNumber: Double) {
 
     def -(days: Double) = new JulianDate(dayNumber - days)
 
-    def -(jd: JulianDate) = dayNumber - jd.dayNumber
+    def -(jd: JulianDate): Double = dayNumber - jd.dayNumber
 
-    def ==(jd: JulianDate) = equals(jd)
+    def ==(jd: JulianDate): Boolean = equals(jd)
 
-    def >(jd: JulianDate) = dayNumber > jd.dayNumber
+    def >(jd: JulianDate): Boolean = dayNumber > jd.dayNumber
 
-    def <(jd: JulianDate) = ! >(jd) && ! ==(jd)
+    def <(jd: JulianDate): Boolean = ! >(jd) && ! ==(jd)
 
-    def <=(jd: JulianDate) = ! >(jd)
+    def <=(jd: JulianDate): Boolean = ! >(jd)
 
     def canEqual(other: Any): Boolean = other.isInstanceOf[JulianDate]
 
