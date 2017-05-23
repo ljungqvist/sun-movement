@@ -17,21 +17,17 @@ class Vector(x0: Double, x1: Double, x2: Double) {
 
     def z: Double = v(2)
 
-    def *(other: Vector): Double = {
-        var res: Double = 0d
-        for (i <- 0 until 3)
-            res += this.v(i) * other.v(i)
-        res
-    }
+    def *(other: Vector): Double =
+        (v, other.v).zipped.map(_ * _).sum
 
     def rot(axis: Int, angle: Angle): Vector = {
-        val vector = Vector()
         val a: Int = (axis + 1) % 3
         val b: Int = (axis + 2) % 3
-        vector.v(axis) = v(axis)
-        vector.v(a) = angle.cos * v(a) - angle.sin * v(b)
-        vector.v(b) = angle.sin * v(a) + angle.cos * v(b)
-        vector
+        Vector(
+            v(axis),
+            angle.cos * v(a) - angle.sin * v(b),
+            angle.sin * v(a) + angle.cos * v(b)
+        )
     }
 
 }

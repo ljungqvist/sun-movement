@@ -18,7 +18,7 @@ object Newton extends LazyLogging {
       * @param d  step to take in calculating the derivative
       * @return the x where f(x) = y0
       */
-    def apply(f: Double => Double, x0: Double, y0: Double, d: Double): Double = {
+    def solve(f: (Double) => Double, y0: Double, x0: Double, d: Double): Double = {
 
         var x1 = x0
         var x2 = x0
@@ -32,7 +32,7 @@ object Newton extends LazyLogging {
     }
 
     /**
-      * Finds the solution to df(x) = 0 using Newton's method
+      * Finds the solution to df(x)/dx = dy0 using Newton's method
       *
       * @param f   function to solve
       * @param x0  starting value
@@ -40,7 +40,7 @@ object Newton extends LazyLogging {
       * @param d   step to take in calculating the derivative
       * @return the x where df(x) = dy0
       */
-    def diff(f: Double => Double, x0: Double, dy0: Double, d: Double): Double = {
+    def diff(f: Double => Double, dy0: Double, x0: Double, d: Double): Double = {
 
         val d2 = d * d
         var x1 = x0

@@ -31,6 +31,8 @@ class JulianDate(val dayNumber: Double) {
 
     def <=(jd: JulianDate): Boolean = ! >(jd)
 
+    def hourPart: Double = dayNumber - dayNumber.asInstanceOf[Long]
+
     def canEqual(other: Any): Boolean = other.isInstanceOf[JulianDate]
 
     override def equals(other: Any): Boolean = other match {

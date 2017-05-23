@@ -1,7 +1,5 @@
 package info.ljungqvist.sun
 
-import java.util.Date
-
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -17,14 +15,14 @@ class Sun(val position: Position) {
 
     private val v0: Vector = Vector(1d, 0d, 0d).rot(1, -position.lat).rot(2, position.lng)
 
-    private def sinTheta(julianDate: JulianDate): Double = {
+    def sinTheta(julianDate: JulianDate): Double = {
         val l = eclipticLongitude(julianDate)
-        Vector(l.cos, l.sin, 0d) * v0.rot(2, meanLongitudeOfTheSun(julianDate)).rot(1, -AXIAL_TILT)
+        Vector(l.cos, l.sin, 0d) * v0.rot(2, meanLongitudeOfTheSun(julianDate)).rot(1, -axialTilt(julianDate))
     }
 
     private def sinThetaNewton(julianDayNumber: Double): Double = sinTheta(JD(julianDayNumber))
 
-    private def v_pole_sun(jd: JulianDate): Angle = (AXIAL_TILT.sin * eclipticLongitude(jd).cos).acos
+    private def v_pole_sun(jd: JulianDate): Angle = (axialTilt(jd).sin * eclipticLongitude(jd).cos).acos
 
     private def d(a: Double, b: Double): Double = (b - a) / JD_D
 
@@ -33,9 +31,9 @@ class Sun(val position: Position) {
     /**
       * Calculates when the sun the next time after "date", passes the angle in either rising or setting direction.
       *
-      * @param angle the angle to pass
+      * @param angle  the angle to pass
       * @param rising true for rising, false for setting direction
-      * @param date the date after which the passing should take place
+      * @param date   the date after which the passing should take place
       * @return the next Julian Date a passing will accure
       */
     def nextPassing(angle: Angle, rising: Boolean, date: JulianDate): JulianDate = {
@@ -67,7 +65,7 @@ class Sun(val position: Position) {
             p_ = p
             p = sinTheta(jdTmp)
         }
-        JulianDate(Newton(sinThetaNewton, jdTmp.dayNumber, angle.sin, JD_D))
+        JulianDate(Newton.solve(sinThetaNewton, angle.sin, jdTmp.dayNumber, JD_D))
     }
 
     private def getM(fwd: Boolean, day: Boolean, jd: JulianDate): JulianDate = {
@@ -88,7 +86,7 @@ class Sun(val position: Position) {
             pn = sinTheta(jdTmp + JD_D)
             dp = d(p, pn)
         }
-        JulianDate(Newton.diff(sinThetaNewton, jdTmp.dayNumber, 0d, JD_D))
+        JulianDate(Newton.diff(sinThetaNewton, 0d, jdTmp.dayNumber, JD_D))
     }
 
     private def cleanArr(arr: Array[JulianDate]): Array[JulianDate] = {
@@ -101,8 +99,8 @@ class Sun(val position: Position) {
         x.toArray
     }
 
-    def isBetween(fromAngle: Angle, fromRising: Boolean, fromMinutes : Int,
-        toAngle: Angle, toRising: Boolean, toMinutes : Int,
+    def isBetween(fromAngle: Angle, fromRising: Boolean, fromMinutes: Int,
+        toAngle: Angle, toRising: Boolean, toMinutes: Int,
         date: JulianDate): Boolean = {
         var jd_from = new Array[JulianDate](6)
         var jd_to = new Array[JulianDate](6)
@@ -162,7 +160,11 @@ class Sun(val position: Position) {
 
 object Sun {
 
-    private val AXIAL_TILT: Angle = Deg(23.44d)
+    import Angle._
+
+    def apply(lat: Double, lng: Double) = new Sun(Position(Deg(lat), Deg(lng)))
+
+    private def axialTilt(jd: JulianDate): Angle = Deg(23.439d) - Deg(.0000004) * jd.j2000
 
     //private val MILLISECONDS_PER_DAY: Double = 24d * 60d * 60d * 1000d
     private val JD_D: Double = 0.00001
@@ -176,6 +178,9 @@ object Sun {
     private val DEG_357_528 = Deg(357.528d)
     private val DEG_0_986 = Deg(0.9856003d)
 
+
+    // Ecliptic coordinates
+
     private def eclipticLongitude(julianDate: JulianDate): Angle = {
         val L = meanLongitudeOfTheSun(julianDate)
         val g = meanAnomalyOfTheSun(julianDate)
@@ -185,13 +190,16 @@ object Sun {
     private def meanLongitudeOfTheSun(julianDate: JulianDate): Angle =
         Rad(2 * Math.PI * (VAL_0_02906 + VAL_0_00274 * julianDate.j2000))
 
-    /**
-      * Calculates the [[https://en.wikipedia.org/wiki/Mean_anomaly Mean anomaly]] of the sun.
-      *
-      * @param julianDate the [[JulianDate]] to calculate for
-      * @return the mean anomaly
-      */
     private[sun] def meanAnomalyOfTheSun(julianDate: JulianDate): Angle =
         DEG_357_528 + DEG_0_986 * julianDate.j2000
+
+
+    // Equatorial coordinates
+
+    private def rightAscension(eclipticLongitude: Angle, tilt: Angle): Angle =
+        Rad(Math.atan2(tilt.cos * eclipticLongitude.sin, eclipticLongitude.cos))
+
+    private def declination(eclipticLongitude: Angle, tilt: Angle) =
+        (tilt.sin * eclipticLongitude.sin).asin
 
 }

@@ -22,4 +22,10 @@ class JulianDateTest extends WordSpec with MustMatchers {
         }
     }
 
+    "Julian dates" should {
+        "return hour part" in {
+            JulianDate(123.456).hourPart mustEqual .456 +- .0000000001
+        }
+    }
+
 }

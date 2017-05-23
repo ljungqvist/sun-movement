@@ -5,5 +5,4 @@ package info.ljungqvist.sun
  *
  * @author Petter Ljungqvist (petter.ljungqvist@houston-inc.com)
  */
-class Position(val lat: Angle, val lng: Angle) {
-}
+case class Position(lat: Angle, lng: Angle)
