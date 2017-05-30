@@ -23,11 +23,11 @@ class Vector(x0: Double, x1: Double, x2: Double) {
     def rot(axis: Int, angle: Angle): Vector = {
         val a: Int = (axis + 1) % 3
         val b: Int = (axis + 2) % 3
-        Vector(
-            v(axis),
-            angle.cos * v(a) - angle.sin * v(b),
-            angle.sin * v(a) + angle.cos * v(b)
-        )
+        val vector = Vector()
+        vector.v(axis) = v(axis)
+        vector.v(a) = angle.cos * v(a) - angle.sin * v(b)
+        vector.v(b) = angle.sin * v(a) + angle.cos * v(b)
+        vector
     }
 
 }
