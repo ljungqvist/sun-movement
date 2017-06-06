@@ -17,20 +17,17 @@ class Sun(val position: Position) {
 
     def sinTheta(julianDate: JulianDate): Double = {
         val l = eclipticLongitude(julianDate)
-        val earthRotation = Rad(julianDate.hourPart * Angle.RAD_MAX) + l
-        val t1 = v0.rot(2, earthRotation)
-        val at = axialTilt(julianDate)
-        val t2 = t1.rot(1, -at)
-        val t3 = t2.rot(2, -l)
-        val t4 = Vector(1d, 0d, 0d) * t3
-        t4
-//            Vector(1d, 0d, 0d) * v0.rot(2, earthRotation).rot(1, -axialTilt(julianDate)).rot(2, -l)
+        Vector(1d, 0d, 0d) *
+            v0
+                .rot(2, Rad(julianDate.hourPart * Angle.RAD_MAX) + l)
+                .rot(1, -axialTilt(julianDate))
+                .rot(2, -l)
     }
 
-//    def sinTheta(julianDate: JulianDate): Double = {
-//        val l = eclipticLongitude(julianDate)
-//        Vector(l.cos, l.sin, 0d) * v0.rot(2, meanLongitudeOfTheSun(julianDate)).rot(1, -axialTilt(julianDate))
-//    }
+    //    def sinTheta(julianDate: JulianDate): Double = {
+    //        val l = eclipticLongitude(julianDate)
+    //        Vector(l.cos, l.sin, 0d) * v0.rot(2, meanLongitudeOfTheSun(julianDate)).rot(1, -axialTilt(julianDate))
+    //    }
 
     private def sinThetaNewton(julianDayNumber: Double): Double = sinTheta(JD(julianDayNumber))
 
