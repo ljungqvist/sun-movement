@@ -31,7 +31,7 @@ class Sun(val position: Position) {
 
     private def sinThetaNewton(julianDayNumber: Double): Double = sinTheta(JD(julianDayNumber))
 
-    private def v_pole_sun(jd: JulianDate): Angle = (axialTilt(jd).sin * eclipticLongitude(jd).cos).acos
+    private def sunPoleAngle(jd: JulianDate): Angle = (axialTilt(jd).sin * eclipticLongitude(jd).cos).acos
 
     private def d(a: Double, b: Double): Double = (b - a) / JD_D
 
@@ -45,14 +45,14 @@ class Sun(val position: Position) {
       * @param date   the date after which the passing should take place
       * @return the next Julian Date a passing will accure
       */
-    def nextPassing(angle: Angle, rising: Boolean, date: JulianDate): JulianDate = {
+    def nextPassing(angle: Angle, rising: Boolean, date: JulianDate): Passing = {
         var jdTmp = date
-        val d_ang = v_pole_sun(jdTmp + .25)
-        val from_n = Rad(Math.PI / 2d) - this.position.lat
-        val max: Angle = Rad(Math.PI / 2d) - z_pi(d_ang - from_n)
-        val min: Angle = Rad(Math.PI / 2d) - z_pi(d_ang + from_n)
-        if (max.inRad < angle.inRad) return new JulianDate(-1)
-        if (min.inRad > angle.inRad) return new JulianDate(-2)
+        val d_ang: Angle = sunPoleAngle(jdTmp + .25)
+        val angleFromNorthPole: Angle = Rad(Math.PI / 2d) - this.position.lat
+        val max: Angle = Rad(Math.PI / 2d) - z_pi(d_ang - angleFromNorthPole)
+        val min: Angle = Rad(Math.PI / 2d) - z_pi(d_ang + angleFromNorthPole)
+        if (max.inRad < angle.inRad) return Below
+        if (min.inRad > angle.inRad) return Above
 
         val max_ : Double = min.sin + 0.6 * (max.sin - min.sin)
         val min_ : Double = min.sin + 0.4 * (max.sin - min.sin)
@@ -74,7 +74,7 @@ class Sun(val position: Position) {
             p_ = p
             p = sinTheta(jdTmp)
         }
-        JulianDate(Newton.solve(sinThetaNewton, angle.sin, jdTmp.dayNumber, JD_D))
+        Passes(JulianDate(Newton.solve(sinThetaNewton, angle.sin, jdTmp.dayNumber, JD_D)))
     }
 
     private def getM(fwd: Boolean, day: Boolean, jd: JulianDate): JulianDate = {
@@ -98,72 +98,72 @@ class Sun(val position: Position) {
         JulianDate(Newton.diff(sinThetaNewton, 0d, jdTmp.dayNumber, JD_D))
     }
 
-    private def cleanArr(arr: Array[JulianDate]): Array[JulianDate] = {
-        var x: ArrayBuffer[JulianDate] = ArrayBuffer[JulianDate]()
+    private def cleanArr(arr: Array[Passing]): Array[Passing] = {
+        var x: ArrayBuffer[Passing] = ArrayBuffer[Passing]()
         var last = JulianDate(-3d)
-        for (i <- 0 until 6) {
-            if (Math.abs(arr(i) - last) > 0.1) x += arr(i)
-            last = arr(i)
-        }
+        //        for (i <- 0 until 6) {
+        //            if (Math.abs(arr(i) - last) > 0.1) x += arr(i)
+        //            last = arr(i)
+        //        }
         x.toArray
     }
 
-    def isBetween(fromAngle: Angle, fromRising: Boolean, fromMinutes: Int,
-        toAngle: Angle, toRising: Boolean, toMinutes: Int,
-        date: JulianDate): Boolean = {
-        var jd_from = new Array[JulianDate](6)
-        var jd_to = new Array[JulianDate](6)
-
-        for (i <- 0 until 6) {
-            jd_from(i) = nextPassing(fromAngle, fromRising, date + 0.5 * i.toDouble - 1.5)
-            jd_to(i) = nextPassing(toAngle, toRising, date + 0.5 * i.toDouble - 1.5)
-        }
-        jd_from = cleanArr(jd_from)
-        jd_to = cleanArr(jd_to)
-        if (jd_from.length == 1 && jd_from(0) < JD0 && jd_to.length == 1 && jd_to(0) < JD0) {
-            if (jd_from(0) < JulianDate(1.5)) return fromRising && !toRising
-            else return !fromRising && toRising
-        }
-        if (jd_from.length == 1 && jd_from(0) < JD0) {
-            jd_from = new Array[JulianDate](2)
-            val day: Boolean = fromAngle.inRad > toAngle.inRad
-            jd_from(0) = getM(false, day, date)
-            jd_from(1) = getM(true, day, date)
-        }
-        if (jd_to.length == 1 && jd_to(0) < JD0) {
-            jd_to = new Array[JulianDate](2)
-            val day: Boolean = fromAngle.inRad < toAngle.inRad
-            jd_to(0) = getM(false, day, date)
-            jd_to(1) = getM(true, day, date)
-        }
-        if (fromAngle == toAngle && fromRising == toRising) {
-            for (i <- 0 until jd_from.length - 1)
-                if (if (fromMinutes < toMinutes) jd_from(i) + DAYS_IN_MINUTE * fromMinutes <= date && jd_from(i) + DAYS_IN_MINUTE * toMinutes > date
-                else jd_from(i) + DAYS_IN_MINUTE * fromMinutes <= date && jd_from(i + 1) + DAYS_IN_MINUTE * toMinutes > date) return true
-
-            return false
-        }
-        var fi: Int = 0
-        var ti: Int = 0
-        var from: Array[JulianDate] = new Array[JulianDate](0)
-        var to: Array[JulianDate] = new Array[JulianDate](0)
-        while (fi < jd_from.length && ti < jd_to.length) {
-            if (jd_from(fi) < jd_to(ti)) {
-                from +:= jd_from(fi)
-                to +:= jd_to(ti)
-                fi += 1
-                ti += 1
-            }
-            else {
-                ti += 1
-                ti
-            }
-        }
-        for (i <- from.indices)
-            if (from(i) + DAYS_IN_MINUTE * fromMinutes <= date && to(i) + DAYS_IN_MINUTE * toMinutes > date)
-                return true
-        false
-    }
+    //    def isBetween(fromAngle: Angle, fromRising: Boolean, fromMinutes: Int,
+    //        toAngle: Angle, toRising: Boolean, toMinutes: Int,
+    //        date: JulianDate): Boolean = {
+    //        var jd_from = new Array[Passing](6)
+    //        var jd_to = new Array[Passing](6)
+    //
+    //        for (i <- 0 until 6) {
+    //            jd_from(i) = nextPassing(fromAngle, fromRising, date + 0.5 * i.toDouble - 1.5)
+    //            jd_to(i) = nextPassing(toAngle, toRising, date + 0.5 * i.toDouble - 1.5)
+    //        }
+    //        jd_from = cleanArr(jd_from)
+    //        jd_to = cleanArr(jd_to)
+    //        if (jd_from.length == 1 && jd_from(0) < JD0 && jd_to.length == 1 && jd_to(0) < JD0) {
+    //            if (jd_from(0) < JulianDate(1.5)) return fromRising && !toRising
+    //            else return !fromRising && toRising
+    //        }
+    //        if (jd_from.length == 1 && jd_from(0) < JD0) {
+    //            jd_from = new Array[JulianDate](2)
+    //            val day: Boolean = fromAngle.inRad > toAngle.inRad
+    //            jd_from(0) = getM(false, day, date)
+    //            jd_from(1) = getM(true, day, date)
+    //        }
+    //        if (jd_to.length == 1 && jd_to(0) < JD0) {
+    //            jd_to = new Array[JulianDate](2)
+    //            val day: Boolean = fromAngle.inRad < toAngle.inRad
+    //            jd_to(0) = getM(false, day, date)
+    //            jd_to(1) = getM(true, day, date)
+    //        }
+    //        if (fromAngle == toAngle && fromRising == toRising) {
+    //            for (i <- 0 until jd_from.length - 1)
+    //                if (if (fromMinutes < toMinutes) jd_from(i) + DAYS_IN_MINUTE * fromMinutes <= date && jd_from(i) + DAYS_IN_MINUTE * toMinutes > date
+    //                else jd_from(i) + DAYS_IN_MINUTE * fromMinutes <= date && jd_from(i + 1) + DAYS_IN_MINUTE * toMinutes > date) return true
+    //
+    //            return false
+    //        }
+    //        var fi: Int = 0
+    //        var ti: Int = 0
+    //        var from: Array[JulianDate] = new Array[JulianDate](0)
+    //        var to: Array[JulianDate] = new Array[JulianDate](0)
+    //        while (fi < jd_from.length && ti < jd_to.length) {
+    //            if (jd_from(fi) < jd_to(ti)) {
+    //                from +:= jd_from(fi)
+    //                to +:= jd_to(ti)
+    //                fi += 1
+    //                ti += 1
+    //            }
+    //            else {
+    //                ti += 1
+    //                ti
+    //            }
+    //        }
+    //        for (i <- from.indices)
+    //            if (from(i) + DAYS_IN_MINUTE * fromMinutes <= date && to(i) + DAYS_IN_MINUTE * toMinutes > date)
+    //                return true
+    //        false
+    //    }
 
 }
 
@@ -210,5 +210,13 @@ object Sun {
 
     private def declination(eclipticLongitude: Angle, tilt: Angle) =
         (tilt.sin * eclipticLongitude.sin).asin
+
+    sealed abstract class Passing()
+
+    case object Above extends Passing
+
+    case object Below extends Passing
+
+    case class Passes(julianDate: JulianDate) extends Passing
 
 }

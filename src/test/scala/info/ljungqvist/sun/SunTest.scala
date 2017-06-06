@@ -68,5 +68,23 @@ class SunTest extends WordSpec with MustMatchers {
         }
     }
 
+    "The next passings" should {
+
+        "be the following times over the equator" in {
+            val sun = Sun(0, 0)
+
+            val spring = date("2000-03-22 00:51")
+
+            val minute = 1d / 60d
+
+            sun.nextPassing(Rad(0), true, spring).asInstanceOf[Sun.Passes].julianDate.dayNumber mustEqual date("2000-03-22 06:00").dayNumber +- minute
+            sun.nextPassing(Rad(0), false, spring).asInstanceOf[Sun.Passes].julianDate.dayNumber mustEqual date("2000-03-22 18:00").dayNumber +- minute
+            sun.nextPassing(Deg(89), false, spring).asInstanceOf[Sun.Passes].julianDate.dayNumber mustEqual date("2000-03-22 12:00").dayNumber +- minute
+            sun.nextPassing(Deg(-90), false, spring) mustEqual Sun.Above
+            sun.nextPassing(Deg(90), false, spring) mustEqual Sun.Below
+        }
+
+    }
+
 
 }
