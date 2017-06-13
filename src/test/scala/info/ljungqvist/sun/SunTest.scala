@@ -64,24 +64,41 @@ class SunTest extends WordSpec with MustMatchers {
 
             sun.sinTheta(date("2017-05-23 18:58")).asin.inDeg mustEqual 0d +- 1d
             sun.sinTheta(date("2017-05-01 12:00")).asin.inDeg mustEqual 54d +- 1d
+            sun.sinTheta(date("2017-06-13 17:26")).asin.inDeg mustEqual 15.97d +- 1d
 
         }
     }
 
     "The next passings" should {
 
-        "be the following times over the equator" in {
+        val minute = 4d / 24d / 60d
+
+        "be at the following times over the equator" in {
             val sun = Sun(0, 0)
 
             val spring = date("2000-03-22 00:51")
-
-            val minute = 1d / 60d
 
             sun.nextPassing(Rad(0), true, spring).asInstanceOf[Sun.Passes].julianDate.dayNumber mustEqual date("2000-03-22 06:00").dayNumber +- minute
             sun.nextPassing(Rad(0), false, spring).asInstanceOf[Sun.Passes].julianDate.dayNumber mustEqual date("2000-03-22 18:00").dayNumber +- minute
             sun.nextPassing(Deg(89), false, spring).asInstanceOf[Sun.Passes].julianDate.dayNumber mustEqual date("2000-03-22 12:00").dayNumber +- minute
             sun.nextPassing(Deg(-90), false, spring) mustEqual Sun.Above
             sun.nextPassing(Deg(90), false, spring) mustEqual Sun.Below
+        }
+
+        "be at the following times in Nürnberg" in {
+            val nurnberg = Sun(49.49500, 11.07300)
+
+            nurnberg.nextPassing(Deg(15.97), false, date("2017-06-12 20:00")).asInstanceOf[Sun.Passes].julianDate.dayNumber mustEqual
+                date("2017-06-13 17:26").dayNumber +- minute
+        }
+
+        "be at the following times at the North Pole" in {
+            val northPole = Sun(90, 0)
+
+            northPole.nextPassing(Deg(0), false, date("2017-06-13 12:00")) mustEqual Sun.Above
+            northPole.nextPassing(Deg(0), false, date("2017-01-13 12:00")) mustEqual Sun.Below
+            northPole.nextPassing(Deg(0), false, date("2017-03-19 12:00")) mustEqual Sun.Below
+            northPole.nextPassing(Deg(0), false, date("2017-03-24 12:00")) mustEqual Sun.Above
         }
 
     }

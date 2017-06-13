@@ -1,5 +1,7 @@
 package info.ljungqvist.sun
 
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -7,7 +9,7 @@ import scala.collection.mutable.ArrayBuffer
   *
   * @author Petter Ljungqvist (petter.ljungqvist@terdelle.com)
   */
-class Sun(val position: Position) {
+class Sun(val position: Position) extends LazyLogging {
 
     import Angle._
     import JulianDate._
@@ -31,7 +33,7 @@ class Sun(val position: Position) {
 
     private def sinThetaNewton(julianDayNumber: Double): Double = sinTheta(JD(julianDayNumber))
 
-    private def sunPoleAngle(jd: JulianDate): Angle = (axialTilt(jd).sin * eclipticLongitude(jd).cos).acos
+    private def sunPoleAngle(jd: JulianDate): Angle = (axialTilt(jd).sin * (-eclipticLongitude(jd).cos)).acos
 
     private def d(a: Double, b: Double): Double = (b - a) / JD_D
 
@@ -43,31 +45,30 @@ class Sun(val position: Position) {
       * @param angle  the angle to pass
       * @param rising true for rising, false for setting direction
       * @param date   the date after which the passing should take place
-      * @return the next Julian Date a passing will accure
+      * @return the next Julian Date a passing will occur
       */
     def nextPassing(angle: Angle, rising: Boolean, date: JulianDate): Passing = {
         var jdTmp = date
-        val d_ang: Angle = sunPoleAngle(jdTmp + .25)
+        val spAngle: Angle = sunPoleAngle(jdTmp + .25)
         val angleFromNorthPole: Angle = Rad(Math.PI / 2d) - this.position.lat
-        val max: Angle = Rad(Math.PI / 2d) - z_pi(d_ang - angleFromNorthPole)
-        val min: Angle = Rad(Math.PI / 2d) - z_pi(d_ang + angleFromNorthPole)
-        if (max.inRad < angle.inRad) return Below
-        if (min.inRad > angle.inRad) return Above
+        val sunMaxAngle: Angle = Rad(Math.PI / 2d) - z_pi(spAngle - angleFromNorthPole)
+        val sunMinAngle: Angle = Rad(Math.PI / 2d) - z_pi(spAngle + angleFromNorthPole)
 
-        val max_ : Double = min.sin + 0.6 * (max.sin - min.sin)
-        val min_ : Double = min.sin + 0.4 * (max.sin - min.sin)
+        if (sunMaxAngle.inRad < angle.inRad) return Below
+        if (sunMinAngle.inRad > angle.inRad) return Above
+
         var p: Double = sinTheta(jdTmp)
-        var pn: Double = sinTheta(jdTmp + JD_D)
-        var dp: Double = d(p, pn)
         if (if (rising) p > angle.sin else p < angle.sin) {
-            while (if (rising) dp > 0 else dp < 0) {
+            while (if (rising) p < sinTheta(jdTmp + JD_D) else p > sinTheta(jdTmp + JD_D)) {
                 jdTmp += JD_STEP
                 p = sinTheta(jdTmp)
-                pn = sinTheta(jdTmp + JD_D)
-                dp = d(p, pn)
             }
-            while (if (rising) p > sinTheta(jdTmp - JD_STEP) else p < sinTheta(jdTmp - JD_STEP)) jdTmp += JD_STEP
+            while (if (rising) p > sinTheta(jdTmp - JD_STEP) else p < sinTheta(jdTmp - JD_STEP))
+                jdTmp += JD_STEP
         }
+
+        val max_ : Double = sunMinAngle.sin + 0.6 * (sunMaxAngle.sin - sunMinAngle.sin)
+        val min_ : Double = sunMinAngle.sin + 0.4 * (sunMaxAngle.sin - sunMinAngle.sin)
         var p_ : Double = sinTheta(jdTmp - JD_STEP)
         while (!(if (rising) p > p_ && p > min_ else p < p_ && p < max_)) {
             jdTmp += JD_STEP
@@ -100,11 +101,11 @@ class Sun(val position: Position) {
 
     private def cleanArr(arr: Array[Passing]): Array[Passing] = {
         var x: ArrayBuffer[Passing] = ArrayBuffer[Passing]()
-        var last = JulianDate(-3d)
-        //        for (i <- 0 until 6) {
-        //            if (Math.abs(arr(i) - last) > 0.1) x += arr(i)
-        //            last = arr(i)
-        //        }
+        var last: Passing = NotSetPassing
+        for (i <- 0 until 6) {
+            if (!arr(i).isClose(last)) x += arr(i)
+            last = arr(i)
+        }
         x.toArray
     }
 
@@ -176,7 +177,7 @@ object Sun {
     private def axialTilt(jd: JulianDate): Angle = Deg(23.439d) - Deg(.0000004) * jd.j2000
 
     //private val MILLISECONDS_PER_DAY: Double = 24d * 60d * 60d * 1000d
-    private val JD_D: Double = 0.00001
+    private val JD_D: Double = 0.0001
     private val JD_STEP: Double = 0.01
     private val DAYS_IN_MINUTE: Double = 1 / 24 / 60
 
@@ -211,12 +212,33 @@ object Sun {
     private def declination(eclipticLongitude: Angle, tilt: Angle) =
         (tilt.sin * eclipticLongitude.sin).asin
 
-    sealed abstract class Passing()
+    sealed abstract class Passing() {
+        def isClose(other: Passing): Boolean
+    }
 
-    case object Above extends Passing
+    case object Above extends Passing {
+        override def isClose(other: Passing): Boolean = other match {
+            case Above => true
+            case _     => false
+        }
+    }
 
-    case object Below extends Passing
+    case object Below extends Passing {
+        override def isClose(other: Passing): Boolean = other match {
+            case Below => true
+            case _     => false
+        }
+    }
 
-    case class Passes(julianDate: JulianDate) extends Passing
+    case class Passes(julianDate: JulianDate) extends Passing {
+        override def isClose(other: Passing): Boolean = other match {
+            case Passes(jd) => Math.abs(jd - julianDate) < 0.1
+            case _          => false
+        }
+    }
+
+    case object NotSetPassing extends Passing {
+        override def isClose(other: Passing): Boolean = false
+    }
 
 }
