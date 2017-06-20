@@ -35,6 +35,11 @@ class Angle(angle: Double) {
 
     def ==(other: Angle): Boolean = equals(other)
 
+    def >(other: Angle): Boolean = a > other.a
+    def >=(other: Angle): Boolean = a >= other.a
+    def <(other: Angle): Boolean = a < other.a
+    def <=(other: Angle): Boolean = a <= other.a
+
     def isPositive: Boolean = a >= 0d
 
     def inRad: Double = a
@@ -45,7 +50,7 @@ class Angle(angle: Double) {
 
     override def equals(o: scala.Any): Boolean = o match {
         case angle: Angle => a == angle.a
-        case _ => false
+        case _            => false
     }
 
     override def hashCode: Int = a.hashCode

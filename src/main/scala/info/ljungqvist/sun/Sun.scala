@@ -109,38 +109,108 @@ class Sun(val position: Position) extends LazyLogging {
         x.toArray
     }
 
-    //    def isBetween(fromAngle: Angle, fromRising: Boolean, fromMinutes: Int,
-    //        toAngle: Angle, toRising: Boolean, toMinutes: Int,
-    //        date: JulianDate): Boolean = {
-    //        var jd_from = new Array[Passing](6)
-    //        var jd_to = new Array[Passing](6)
+    private def getAngleAndDirection(date: JulianDate): AngleAndDirection = {
+        val sinT = sinTheta(date)
+        AngleAndDirection(sinT.asin, d(sinT, sinTheta(date + JD_D)) > 0)
+    }
+
+    private def minutesToDays(minutes: Int): Double = minutes.toDouble / 60d / 24d
+
+    /**
+      * Determine if
+      *
+      * @param date        is between
+      * @param fromMinutes minutes after the sun passing the
+      * @param fromAngle   in
+      * @param fromRising  direction
+      *                    and
+      * @param toMinutes   after the sun passing
+      * @param toAngle     in
+      * @param toRising    direction
+      * @return
+      */
+    def isBetween(
+        fromAngle: Angle,
+        fromRising: Boolean,
+        fromMinutes: Int,
+        toAngle: Angle,
+        toRising: Boolean,
+        toMinutes: Int,
+        date: JulianDate
+    ): Boolean = {
+        val fromAad = getAngleAndDirection(date - minutesToDays(fromMinutes))
+        val toAad = getAngleAndDirection(date - minutesToDays(toMinutes))
+
+        (fromRising, toRising) match {
+            case (true, true)   =>
+                if (fromAngle <= toAngle) {
+                    fromAad.rising && fromAad.angle >= fromAngle &&
+                        toAad.rising && toAad.angle <= toAngle
+                } else {
+                    !(fromAad.rising && fromAad.angle <= fromAngle &&
+                        toAad.rising && toAad.angle >= toAngle)
+                }
+            case (true, false)  =>
+                (fromAad.rising && fromAad.angle >= fromAngle) ||
+                    (!toAad.rising && toAad.angle >= toAngle)
+            case (false, true)  =>
+                (!fromAad.rising && fromAad.angle <= fromAngle) ||
+                    (toAad.rising && toAad.angle <= toAngle)
+            case (false, false) =>
+                if (fromAngle >= toAngle) {
+                    !fromAad.rising && fromAad.angle <= fromAngle &&
+                        !toAad.rising && toAad.angle >= toAngle
+                } else {
+                    !(!fromAad.rising && fromAad.angle >= fromAngle &&
+                        !toAad.rising && toAad.angle <= toAngle)
+                }
+        }
+    }
+
+    //    def isBetween(
+    //        fromAngle: Angle,
+    //        fromRising: Boolean,
+    //        fromMinutes: Int,
+    //        toAngle: Angle,
+    //        toRising: Boolean,
+    //        toMinutes: Int,
+    //        date: JulianDate
+    //    ): Boolean = {
+    //        var jdFrom = new Array[Passing](6)
+    //        var jdTo = new Array[Passing](6)
     //
     //        for (i <- 0 until 6) {
-    //            jd_from(i) = nextPassing(fromAngle, fromRising, date + 0.5 * i.toDouble - 1.5)
-    //            jd_to(i) = nextPassing(toAngle, toRising, date + 0.5 * i.toDouble - 1.5)
+    //            jdFrom(i) = nextPassing(fromAngle, fromRising, date + 0.5 * i.toDouble - 1.5)
+    //            jdTo(i) = nextPassing(toAngle, toRising, date + 0.5 * i.toDouble - 1.5)
     //        }
-    //        jd_from = cleanArr(jd_from)
-    //        jd_to = cleanArr(jd_to)
-    //        if (jd_from.length == 1 && jd_from(0) < JD0 && jd_to.length == 1 && jd_to(0) < JD0) {
-    //            if (jd_from(0) < JulianDate(1.5)) return fromRising && !toRising
-    //            else return !fromRising && toRising
+    //        jdFrom = cleanArr(jdFrom)
+    //        jdTo = cleanArr(jdTo)
+    //        if (jdFrom.length == 1 && jdTo.length == 1) {
+    //            (jdFrom(0), jdTo(0)) match {
+    //                case (Above, Above) => return fromRising && !toRising
+    //                case (Above, Below) => return fromRising && toRising
+    //                case (Below, Above) => return !fromRising && !toRising
+    //                case (Below, Below) => return !fromRising && toRising
+    //                case _              => _
+    //            }
     //        }
-    //        if (jd_from.length == 1 && jd_from(0) < JD0) {
-    //            jd_from = new Array[JulianDate](2)
+    //
+    //        if (jdFrom.length == 1 && jdFrom(0) < JD0) {
+    //            jdFrom = new Array[JulianDate](2)
     //            val day: Boolean = fromAngle.inRad > toAngle.inRad
-    //            jd_from(0) = getM(false, day, date)
-    //            jd_from(1) = getM(true, day, date)
+    //            jdFrom(0) = getM(false, day, date)
+    //            jdFrom(1) = getM(true, day, date)
     //        }
-    //        if (jd_to.length == 1 && jd_to(0) < JD0) {
-    //            jd_to = new Array[JulianDate](2)
+    //        if (jdTo.length == 1 && jdTo(0) < JD0) {
+    //            jdTo = new Array[JulianDate](2)
     //            val day: Boolean = fromAngle.inRad < toAngle.inRad
-    //            jd_to(0) = getM(false, day, date)
-    //            jd_to(1) = getM(true, day, date)
+    //            jdTo(0) = getM(false, day, date)
+    //            jdTo(1) = getM(true, day, date)
     //        }
     //        if (fromAngle == toAngle && fromRising == toRising) {
-    //            for (i <- 0 until jd_from.length - 1)
-    //                if (if (fromMinutes < toMinutes) jd_from(i) + DAYS_IN_MINUTE * fromMinutes <= date && jd_from(i) + DAYS_IN_MINUTE * toMinutes > date
-    //                else jd_from(i) + DAYS_IN_MINUTE * fromMinutes <= date && jd_from(i + 1) + DAYS_IN_MINUTE * toMinutes > date) return true
+    //            for (i <- 0 until jdFrom.length - 1)
+    //                if (if (fromMinutes < toMinutes) jdFrom(i) + DAYS_IN_MINUTE * fromMinutes <= date && jdFrom(i) + DAYS_IN_MINUTE * toMinutes > date
+    //                else jdFrom(i) + DAYS_IN_MINUTE * fromMinutes <= date && jdFrom(i + 1) + DAYS_IN_MINUTE * toMinutes > date) return true
     //
     //            return false
     //        }
@@ -148,10 +218,10 @@ class Sun(val position: Position) extends LazyLogging {
     //        var ti: Int = 0
     //        var from: Array[JulianDate] = new Array[JulianDate](0)
     //        var to: Array[JulianDate] = new Array[JulianDate](0)
-    //        while (fi < jd_from.length && ti < jd_to.length) {
-    //            if (jd_from(fi) < jd_to(ti)) {
-    //                from +:= jd_from(fi)
-    //                to +:= jd_to(ti)
+    //        while (fi < jdFrom.length && ti < jdTo.length) {
+    //            if (jdFrom(fi) < jdTo(ti)) {
+    //                from +:= jdFrom(fi)
+    //                to +:= jdTo(ti)
     //                fi += 1
     //                ti += 1
     //            }
@@ -214,6 +284,7 @@ object Sun {
 
     sealed abstract class Passing() {
         def isClose(other: Passing): Boolean
+        def isSet = false
     }
 
     case object Above extends Passing {
@@ -235,10 +306,13 @@ object Sun {
             case Passes(jd) => Math.abs(jd - julianDate) < 0.1
             case _          => false
         }
+        override val isSet: Boolean = true
     }
 
     case object NotSetPassing extends Passing {
         override def isClose(other: Passing): Boolean = false
     }
+
+    case class AngleAndDirection(angle: Angle, rising: Boolean)
 
 }
