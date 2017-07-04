@@ -26,11 +26,6 @@ class Sun(val position: Position) extends LazyLogging {
                 .rot(2, -l)
     }
 
-    //    def sinTheta(julianDate: JulianDate): Double = {
-    //        val l = eclipticLongitude(julianDate)
-    //        Vector(l.cos, l.sin, 0d) * v0.rot(2, meanLongitudeOfTheSun(julianDate)).rot(1, -axialTilt(julianDate))
-    //    }
-
     private def sinThetaNewton(julianDayNumber: Double): Double = sinTheta(JD(julianDayNumber))
 
     private def sunPoleAngle(jd: JulianDate): Angle = (axialTilt(jd).sin * (-eclipticLongitude(jd).cos)).acos
@@ -111,7 +106,7 @@ class Sun(val position: Position) extends LazyLogging {
 
     private def getAngleAndDirection(date: JulianDate): AngleAndDirection = {
         val sinT = sinTheta(date)
-        AngleAndDirection(sinT.asin, d(sinT, sinTheta(date + JD_D)) > 0)
+        AngleAndDirection(sinT.asin, sinT < sinTheta(date + JD_D))
     }
 
     private def minutesToDays(minutes: Int): Double = minutes.toDouble / 60d / 24d
@@ -167,74 +162,6 @@ class Sun(val position: Position) extends LazyLogging {
         }
     }
 
-    //    def isBetween(
-    //        fromAngle: Angle,
-    //        fromRising: Boolean,
-    //        fromMinutes: Int,
-    //        toAngle: Angle,
-    //        toRising: Boolean,
-    //        toMinutes: Int,
-    //        date: JulianDate
-    //    ): Boolean = {
-    //        var jdFrom = new Array[Passing](6)
-    //        var jdTo = new Array[Passing](6)
-    //
-    //        for (i <- 0 until 6) {
-    //            jdFrom(i) = nextPassing(fromAngle, fromRising, date + 0.5 * i.toDouble - 1.5)
-    //            jdTo(i) = nextPassing(toAngle, toRising, date + 0.5 * i.toDouble - 1.5)
-    //        }
-    //        jdFrom = cleanArr(jdFrom)
-    //        jdTo = cleanArr(jdTo)
-    //        if (jdFrom.length == 1 && jdTo.length == 1) {
-    //            (jdFrom(0), jdTo(0)) match {
-    //                case (Above, Above) => return fromRising && !toRising
-    //                case (Above, Below) => return fromRising && toRising
-    //                case (Below, Above) => return !fromRising && !toRising
-    //                case (Below, Below) => return !fromRising && toRising
-    //                case _              => _
-    //            }
-    //        }
-    //
-    //        if (jdFrom.length == 1 && jdFrom(0) < JD0) {
-    //            jdFrom = new Array[JulianDate](2)
-    //            val day: Boolean = fromAngle.inRad > toAngle.inRad
-    //            jdFrom(0) = getM(false, day, date)
-    //            jdFrom(1) = getM(true, day, date)
-    //        }
-    //        if (jdTo.length == 1 && jdTo(0) < JD0) {
-    //            jdTo = new Array[JulianDate](2)
-    //            val day: Boolean = fromAngle.inRad < toAngle.inRad
-    //            jdTo(0) = getM(false, day, date)
-    //            jdTo(1) = getM(true, day, date)
-    //        }
-    //        if (fromAngle == toAngle && fromRising == toRising) {
-    //            for (i <- 0 until jdFrom.length - 1)
-    //                if (if (fromMinutes < toMinutes) jdFrom(i) + DAYS_IN_MINUTE * fromMinutes <= date && jdFrom(i) + DAYS_IN_MINUTE * toMinutes > date
-    //                else jdFrom(i) + DAYS_IN_MINUTE * fromMinutes <= date && jdFrom(i + 1) + DAYS_IN_MINUTE * toMinutes > date) return true
-    //
-    //            return false
-    //        }
-    //        var fi: Int = 0
-    //        var ti: Int = 0
-    //        var from: Array[JulianDate] = new Array[JulianDate](0)
-    //        var to: Array[JulianDate] = new Array[JulianDate](0)
-    //        while (fi < jdFrom.length && ti < jdTo.length) {
-    //            if (jdFrom(fi) < jdTo(ti)) {
-    //                from +:= jdFrom(fi)
-    //                to +:= jdTo(ti)
-    //                fi += 1
-    //                ti += 1
-    //            }
-    //            else {
-    //                ti += 1
-    //                ti
-    //            }
-    //        }
-    //        for (i <- from.indices)
-    //            if (from(i) + DAYS_IN_MINUTE * fromMinutes <= date && to(i) + DAYS_IN_MINUTE * toMinutes > date)
-    //                return true
-    //        false
-    //    }
 
 }
 

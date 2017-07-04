@@ -19,9 +19,34 @@ class Angle(angle: Double) {
         a
     }
 
-    lazy val sin: Double = Math.sin(a)
-    lazy val cos: Double = Math.cos(a)
-    lazy val tan: Double = Math.tan(a)
+    var _sin: Double = Double.MinValue
+    var _cos: Double = Double.MinValue
+
+    def sin: Double = {
+        if (Double.MinValue == _sin) {
+            _sin =
+                if (Double.MinValue == _cos) {
+                    Math.sin(a)
+                } else {
+                    Math.sqrt((1 + _cos) * (1 - _cos))
+                }
+        }
+        _sin
+    }
+
+    def cos: Double = {
+        if (Double.MinValue == _cos) {
+            _cos =
+                if (Double.MinValue == _sin) {
+                    Math.sin(a)
+                } else {
+                    Math.sqrt((1 + _sin) * (1 - _sin))
+                }
+        }
+        _cos
+    }
+
+    def tan: Double = sin / cos
 
     def unary_- = new Angle(-a)
 
