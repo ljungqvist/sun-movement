@@ -107,8 +107,11 @@ class SunTest extends WordSpec with MustMatchers {
         "be between, at the equator" in {
             val sun = Sun(0, 0)
             sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 12:00")) mustEqual true
-            sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 06:10")) mustEqual true
-            sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 17:50")) mustEqual true
+            sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 06:01")) mustEqual true
+            sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 17:59")) mustEqual true
+            sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 00:00")) mustEqual false
+            sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 05:59")) mustEqual false
+            sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 18:01")) mustEqual false
 
             sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 00:00")) mustEqual true
             sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 05:50")) mustEqual true
@@ -138,8 +141,8 @@ class SunTest extends WordSpec with MustMatchers {
         "not be between, at the equator" in {
             val sun = Sun(0, 0)
             sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 12:00")) mustEqual false
-            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 07:00")) mustEqual false
-            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 17:00")) mustEqual false
+            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 06:10")) mustEqual false
+            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 17:50")) mustEqual false
 
             sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 00:00")) mustEqual false
             sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 05:50")) mustEqual false

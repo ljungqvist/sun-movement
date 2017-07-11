@@ -39,4 +39,28 @@ class AngleTest extends WordSpec with MustMatchers {
 
     }
 
+    "Trigonometric functions" should {
+
+        val d = 0.0000000001
+
+        s"evaluate correctly for " in {
+            var a = 0d
+            val step = 0.00001
+            while (a < 2 * Math.PI) {
+                val ang1 = Rad(a)
+                val tan = Math.tan(a)
+                val dTan = Math.abs(tan * Math.sqrt(d) + d)
+                ang1.sin mustEqual Math.sin(a) +- d
+                ang1.cos mustEqual Math.cos(a) +- d
+                ang1.tan mustEqual tan +- dTan
+                val ang2 = Rad(a)
+                ang2.cos mustEqual Math.cos(a) +- d
+                ang1.sin mustEqual Math.sin(a) +- d
+                ang1.tan mustEqual tan +- dTan
+                a += step
+            }
+        }
+
+    }
+
 }

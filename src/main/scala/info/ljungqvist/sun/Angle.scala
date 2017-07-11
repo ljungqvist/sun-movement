@@ -28,7 +28,8 @@ class Angle(angle: Double) {
                 if (Double.MinValue == _cos) {
                     Math.sin(a)
                 } else {
-                    Math.sqrt((1 + _cos) * (1 - _cos))
+                    Math.sqrt((1 + _cos) * (1 - _cos)) *
+                        (if (isPositive) 1 else -1)
                 }
         }
         _sin
@@ -38,15 +39,22 @@ class Angle(angle: Double) {
         if (Double.MinValue == _cos) {
             _cos =
                 if (Double.MinValue == _sin) {
-                    Math.sin(a)
+                    Math.cos(a)
                 } else {
-                    Math.sqrt((1 + _sin) * (1 - _sin))
+                    Math.sqrt((1 + _sin) * (1 - _sin)) *
+                        (if (a > -Math.PI / 2 && a <= Math.PI / 2) 1 else -1)
                 }
         }
         _cos
     }
 
-    def tan: Double = sin / cos
+    def tan: Double = (sin, cos) match {
+        case (s, c) =>
+            if (0 == c)
+                if (s < 0) Double.NegativeInfinity
+                else Double.PositiveInfinity
+            else s / c
+    }
 
     def unary_- = new Angle(-a)
 
@@ -57,8 +65,6 @@ class Angle(angle: Double) {
     def *(d: Double) = new Angle(a * d)
 
     def /(d: Double) = new Angle(a / d)
-
-    def ==(other: Angle): Boolean = equals(other)
 
     def >(other: Angle): Boolean = a > other.a
     def >=(other: Angle): Boolean = a >= other.a
