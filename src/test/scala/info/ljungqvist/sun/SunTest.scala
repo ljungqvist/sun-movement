@@ -114,28 +114,43 @@ class SunTest extends WordSpec with MustMatchers {
             sun.isBetween(Deg(0), true, 0, Deg(0), false, 0, date("2017-03-22 18:01")) mustEqual false
 
             sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 00:00")) mustEqual true
-            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 05:50")) mustEqual true
-            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 18:10")) mustEqual true
+            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 05:59")) mustEqual true
+            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 18:01")) mustEqual true
+            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 12:00")) mustEqual false
+            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 06:01")) mustEqual false
+            sun.isBetween(Deg(0), false, 0, Deg(0), true, 0, date("2017-03-22 17:59")) mustEqual false
 
             sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 06:00")) mustEqual true
-            sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 03:10")) mustEqual true
-            sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 08:50")) mustEqual true
+            sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 03:01")) mustEqual true
+            sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 08:59")) mustEqual true
+            sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 18:00")) mustEqual false
+            sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 02:59")) mustEqual false
+            sun.isBetween(Deg(-45), true, 0, Deg(45), true, 0, date("2017-03-22 09:01")) mustEqual false
 
             sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 18:00")) mustEqual true
-            sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 15:10")) mustEqual true
-            sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 20:50")) mustEqual true
+            sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 15:01")) mustEqual true
+            sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 20:59")) mustEqual true
+            sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 06:00")) mustEqual false
+            sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 14:59")) mustEqual false
+            sun.isBetween(Deg(45), false, 0, Deg(-45), false, 0, date("2017-03-22 21:01")) mustEqual false
 
-            sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 09:10")) mustEqual true
+            sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 09:01")) mustEqual true
             sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 12:00")) mustEqual true
             sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 18:00")) mustEqual true
             sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 00:00")) mustEqual true
-            sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 02:50")) mustEqual true
+            sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 02:59")) mustEqual true
+            sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 03:01")) mustEqual false
+            sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 06:00")) mustEqual false
+            sun.isBetween(Deg(45), true, 0, Deg(-45), true, 0, date("2017-03-22 08:59")) mustEqual false
 
-            sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 21:10")) mustEqual true
+            sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 21:01")) mustEqual true
             sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 00:00")) mustEqual true
             sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 06:00")) mustEqual true
             sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 12:00")) mustEqual true
-            sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 14:50")) mustEqual true
+            sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 14:59")) mustEqual true
+            sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 15:01")) mustEqual false
+            sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 18:00")) mustEqual false
+            sun.isBetween(Deg(-45), false, 0, Deg(45), false, 0, date("2017-03-22 20:59")) mustEqual false
         }
 
         "not be between, at the equator" in {
