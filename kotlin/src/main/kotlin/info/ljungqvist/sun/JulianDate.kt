@@ -2,7 +2,6 @@ package info.ljungqvist.sun
 
 import java.util.*
 import kotlin.math.floor
-import kotlin.math.round
 
 data class JulianDate(val dayNumber: Double) : Comparable<JulianDate> {
 
@@ -10,7 +9,11 @@ data class JulianDate(val dayNumber: Double) : Comparable<JulianDate> {
 
     fun toDate(): Date = Date(((dayNumber - Y1970.dayNumber) * MILLISECONDS_PER_DAY).toLong())
 
-    fun hourPart(): Double = dayNumber - floor(dayNumber)
+    val hourPart: Double
+            get() = dayNumber - floor(dayNumber)
+
+    val j2000: Double
+        get() = dayNumber - Y2000.dayNumber
 
     operator fun plus(days: Double): JulianDate = jd(dayNumber + days)
     operator fun minus(days: Double): JulianDate = jd(dayNumber - days)
