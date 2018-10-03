@@ -55,8 +55,8 @@ class AngleTest extends WordSpec with MustMatchers {
                 ang1.tan mustEqual tan +- dTan
                 val ang2 = Rad(a)
                 ang2.cos mustEqual Math.cos(a) +- d
-                ang1.sin mustEqual Math.sin(a) +- d
-                ang1.tan mustEqual tan +- dTan
+                ang2.sin mustEqual Math.sin(a) +- d
+                ang2.tan mustEqual tan +- dTan
                 a += step
             }
         }

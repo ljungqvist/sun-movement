@@ -12,7 +12,7 @@ data class Angle internal constructor(val angle: Double) : Comparable<Angle> {
         get() = internalSin
                 ?: run {
                     internalCos?.let { cos ->
-                        Math.sqrt((1 + cos) * (1 - cos))
+                        Math.sqrt((1 + cos) * (1 - cos)) * (if (isPositive) 1 else -1)
                     }
                             ?: Math.sin(angle)
                 }.also { internalSin = it }
@@ -21,7 +21,7 @@ data class Angle internal constructor(val angle: Double) : Comparable<Angle> {
         get() = internalCos
                 ?: run {
                     internalSin?.let { sin ->
-                        Math.sqrt((1 + sin) * (1 - sin))
+                        Math.sqrt((1 + sin) * (1 - sin)) * (if (angle > -Math.PI / 2 && angle <= Math.PI / 2) 1 else -1)
                     }
                             ?: Math.sin(angle)
                 }.also { internalCos = it }
@@ -59,8 +59,8 @@ fun rad(angle: Double) = ((angle + Math.PI) % (Math.PI * 2.0))
 fun deg(angle: Double) = rad(angle / Angle.DEG_MAX * Angle.RAD_MAX)
 
 val Double.asin: Angle
-    get()= let(Math::asin).let(::rad)
+    get() = let(Math::asin).let(::rad)
 val Double.acos: Angle
-    get()= let(Math::acos).let(::rad)
+    get() = let(Math::acos).let(::rad)
 val Double.atan: Angle
-    get()= let(Math::atan).let(::rad)
+    get() = let(Math::atan).let(::rad)
