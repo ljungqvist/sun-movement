@@ -13,6 +13,9 @@ object AngleTest : Spek({
 
         it("in interval [-PI, PI)") {
 
+            Assert.assertEquals(rad(Math.PI), rad(-Math.PI))
+            Assert.assertEquals(rad(Math.PI).inRad, -Math.PI, 0.0)
+            Assert.assertEquals(rad(-Math.PI).inRad, -Math.PI, 0.0)
             Assert.assertEquals(rad(2.0), rad(2.0))
             Assert.assertEquals(rad(1.0 + Angle.RAD_MAX), rad(1.0))
             Assert.assertEquals(rad(1.0 + 2.0 * Angle.RAD_MAX), rad(1.0))
