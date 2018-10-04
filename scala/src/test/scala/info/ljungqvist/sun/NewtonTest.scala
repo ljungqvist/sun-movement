@@ -44,7 +44,7 @@ class NewtonTest extends WordSpec with MustMatchers {
     }
 
     "The root of d(x^2 + 2x)/dx = 6" should {
-        "be 6 when starting from 0" in {
+        "be 2 when starting from 0" in {
             Newton.diff(x => x * x + 2 * x, 6, 0, d) mustEqual 2d +- d2
         }
     }

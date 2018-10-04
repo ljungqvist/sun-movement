@@ -9,7 +9,7 @@ package info.ljungqvist.sun
  * @param d  step to take in calculating the derivative
  * @return the x where f(x) = y0
  */
-fun solveWithNewton(f: (Double) -> Double, y0: Double, x0: Double, d: Double): Double {
+fun solveWithNewton(y0: Double, x0: Double, d: Double, f: (Double) -> Double): Double {
     var x1: Double
     var x2 = x0
     do {
@@ -30,7 +30,7 @@ fun solveWithNewton(f: (Double) -> Double, y0: Double, x0: Double, d: Double): D
  * @param d   step to take in calculating the derivative
  * @return the x where df(x) = dy0
  */
-fun solveDiffWithNewton(f: (Double) -> Double, dy0: Double, x0: Double, d: Double): Double {
+fun solveDiffWithNewton(dy0: Double, x0: Double, d: Double, f: (Double) -> Double): Double {
     val d2 = d * d
     var x1: Double
     var x2 = x0

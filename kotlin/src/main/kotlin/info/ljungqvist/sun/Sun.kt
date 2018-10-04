@@ -58,7 +58,7 @@ data class Sun(val position: Position) {
             p_ = p
             p = sinTheta(jdTmp)
         }
-        return Passing.Passes(JulianDate(solveWithNewton(::sinThetaNewton, angle.sin, jdTmp.dayNumber, JD_D)))
+        return Passing.Passes(JulianDate(solveWithNewton(angle.sin, jdTmp.dayNumber, JD_D, ::sinThetaNewton)))
     }
 
     private fun getM(fwd: Boolean, day: Boolean, jd: JulianDate): JulianDate {
@@ -79,7 +79,7 @@ data class Sun(val position: Position) {
             pn = sinTheta(jdTmp + JD_D)
             dp = d(p, pn)
         }
-        return JulianDate(solveDiffWithNewton(::sinThetaNewton, 0.0, jdTmp.dayNumber, JD_D))
+        return JulianDate(solveDiffWithNewton(0.0, jdTmp.dayNumber, JD_D, ::sinThetaNewton))
     }
 
     private fun cleanArr(arr: Array<Passing>): Array<Passing> {
