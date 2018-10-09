@@ -189,6 +189,12 @@ data class Sun(val position: Position) {
         private fun declination(eclipticLongitude: Angle, tilt: Angle) =
                 (tilt.sin * eclipticLongitude.sin).asin
 
+        fun create(lat: Angle, lng: Angle) = Sun(Position(lat, lng))
+
+        fun fromDeg(lat: Double, lng: Double) = create(deg(lat), deg(lng))
+
+        fun fromRad(lat: Double, lng: Double) = create(rad(lat), rad(lng))
+
     }
 
     sealed class Passing {

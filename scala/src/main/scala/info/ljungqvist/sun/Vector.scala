@@ -5,7 +5,7 @@ package info.ljungqvist.sun
  *
  * @author Petter Ljungqvist (petter.ljungqvist@tredelle.com)
  */
-class Vector(x0: Double, x1: Double, x2: Double) {
+case class Vector(x0: Double, x1: Double, x2: Double) {
 
     private val v = Array(x0, x1, x2)
 

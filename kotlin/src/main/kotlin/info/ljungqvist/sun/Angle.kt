@@ -23,7 +23,7 @@ data class Angle internal constructor(val angle: Double) : Comparable<Angle> {
                     internalSin?.let { sin ->
                         Math.sqrt((1 + sin) * (1 - sin)) * (if (angle > -Math.PI / 2 && angle <= Math.PI / 2) 1 else -1)
                     }
-                            ?: Math.sin(angle)
+                            ?: Math.cos(angle)
                 }.also { internalCos = it }
 
     val tan: Double by lazy {
